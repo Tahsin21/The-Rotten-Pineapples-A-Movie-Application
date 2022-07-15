@@ -1,22 +1,44 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { withStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { MuiThemeProvider, createTheme } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormHelperText from "@material-ui/core/FormHelperText";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
+import TextField from "@material-ui/core/TextField";
+import { makeStyles } from "@material-ui/core/styles";
+import Radio from "@material-ui/core/Radio";
+import RadioGroup from "@material-ui/core/RadioGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormLabel from "@material-ui/core/FormLabel";
+import Button from "@material-ui/core/Button";
+import DeleteIcon from "@material-ui/icons/Delete";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import KeyboardVoiceIcon from "@material-ui/icons/KeyboardVoice";
+import Icon from "@material-ui/core/Icon";
+import SaveIcon from "@material-ui/icons/Save";
+import { Dialog } from "@material-ui/core";
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogActions from '@material-ui/core/DialogActions';
 
 //Dev mode
 const serverURL = ""; //enable for dev mode
 
 //Deployment mode instructions
 //const serverURL = "http://ov-research-4.uwaterloo.ca:PORT"; //enable for deployed mode; Change PORT to the port number given to you;
-//To find your port number: 
-//ssh to ov-research-4.uwaterloo.ca and run the following command: 
+//To find your port number:
+//ssh to ov-research-4.uwaterloo.ca and run the following command:
 //env | grep "PORT"
 //copy the number only and paste it in the serverURL in place of PORT, e.g.: const serverURL = "http://ov-research-4.uwaterloo.ca:3000";
+//3068
 
 const fetch = require("node-fetch");
 
@@ -135,7 +157,7 @@ class Home extends Component {
           >
             {this.state.mode === 0 ? (
               <React.Fragment>
-                Welcome to amaal bhanji!
+                Welcome to MSCI245!
               </React.Fragment>
             ) : (
               <React.Fragment>
@@ -147,26 +169,374 @@ class Home extends Component {
         </Grid>
       </Grid>
     )
-
-
     return (
-      <MuiThemeProvider theme={theme}>
-        <div className={classes.root}>
-          <CssBaseline />
-          <Paper
-            className={classes.paper}
-          >
-            {mainMessage}
-          </Paper>
-
-        </div>
-      </MuiThemeProvider>
+      <div>
+        <Review />
+      </div>
     );
   }
 }
 
-Home.propTypes = {
-  classes: PropTypes.object.isRequired
+const Review = () => {
+  const [movieList, setMovieList] = React.useState([]);
+
+  const [selectedMovie, setSelectedMovie] = React.useState("");
+  const [missingMovie, setMissingMovie] = React.useState(false);
+
+  const [enteredTitle, setEnteredTitle] = React.useState("");
+  const [missingTitle, setMissingTitle] = React.useState(false);
+
+  const [enteredReview, setEnteredReview] = React.useState("");
+  const [missingReview, setMissingReview] = React.useState(false);
+
+  const [selectedRating, setSelectedRating] = React.useState(0); 
+  const [missingRating, setMissingRating] = React.useState(false);
+
+  const [submitSucess, setSubmitSucess] = React.useState(false);
+
+  const getMovies = () => {
+    callApiGetMovies()
+    .then(res => {
+    var parsed = JSON.parse(res.express);
+    setMovieList(parsed);
+    })
+    }
+
+    const callApiGetMovies = async () => {
+    const url = serverURL + "/api/getMovies";
+    console.log(url);
+    const response = await fetch(url, {
+    method: "POST",
+    headers: {
+    "Content-Type": "application/json",
+    }
+    });
+    const body = await response.json();
+    if (response.status !== 200) throw Error(body.message);
+    console.log("User settings: ", body);
+    return body;
+    }
+    
+    React.useEffect(() => {
+      getMovies();
+    }, []);
+    
+  const submitSQLReview = (SQLReview) => {
+    callApiAddReview(SQLReview)
+    .then(res => {
+    })
+  }
+
+  const callApiAddReview = async (SQLReview) => {
+    const url = serverURL + "/api/addReview";
+    console.log(url);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+    "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        data: SQLReview
+      })
+    });
+    
+    const body = await response.json();
+      if (response.status !== 200) throw Error(body.message);
+    console.log("User settings: ", body);
+      return body;
+    }
+
+
+  const submitReview = (event) => {
+    if (selectedMovie && enteredTitle && enteredReview && selectedRating) {
+      var newReview = {
+        "userID": 1,
+        "movieID": 2136,
+        "reviewTitle": enteredTitle,
+        "reviewContent": enteredReview,
+        "reviewScore": parseInt(selectedRating)
+      };
+      
+    setSubmitSucess(true);
+    
+    submitSQLReview(newReview);
+
+    } else if (!selectedMovie) {
+      setMissingMovie(true);
+    } else if (!enteredTitle) {
+      setMissingTitle(true);
+    } else if (!enteredReview) {
+      setMissingReview(true);
+    } else if (!selectedRating) {
+      setMissingRating(true);
+    }
+  }
+
+  const moviePop = () => {
+    setMissingMovie(false);
+  }
+
+  const titlePop = () => {
+    setMissingTitle(false);
+  }
+
+  const reviewPop = () => {
+    setMissingReview(false);
+  }
+
+  const ratingPop = () => {
+    setMissingRating(false);
+  }
+
+  const successPop = () => {
+    setSubmitSucess(false);
+  }
+
+  return (
+        <div style={{
+          padding: '25px',
+        }}>
+        <Grid container spacing={3} rowSpacing ={5}>
+          <Grid item xs={12}>
+  
+            <Typography variant="h3" style={{
+              textAlign: 'center',
+            }}>
+              Let's Review a Movie!
+            </Typography>
+  
+          </Grid>
+  
+          <Grid item xs={6} style={{
+            textAlign: 'right',
+            marginTop: "20px",
+            marginLeft: "50px",
+          }}>
+            <MovieSelection onChange={setSelectedMovie} movieList = {movieList} />
+          </Grid>
+
+          <Grid container spacing={3} style= {{
+              marginTop: "20px",
+              marginLeft: "470px",
+          }}>
+          <Grid item xs={4}>
+            <ReviewTitle onChange={setEnteredTitle} />
+          </Grid>
+
+          <Grid item xs={4}>
+            <ReviewBody onChange={setEnteredReview}/>
+          </Grid>
+        </Grid>
+
+        <Grid item xs={4} style = {{
+            marginTop: "50px",
+            marginLeft: "530px",
+        }}>
+            <ReviewRating onChange={setSelectedRating} />
+          </Grid>
+        
+        <Grid item xs={12} style={{
+            textAlign: 'center',
+            marginLeft: "35px",
+            marginTop: "20px",
+          }}>
+  
+            <Button variant="outlined" color="primary" onClick = {submitReview}>
+              Submit Review
+            </Button>
+        </Grid>
+
+        </Grid>
+
+        <Dialog open={missingMovie} close={moviePop}>
+        <DialogTitle>{"Incomplete Review!"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <p>Please Select A Movie</p>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={moviePop} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+        </Dialog>
+
+        <Dialog open={missingTitle} close={titlePop}>
+        <DialogTitle>{"Incomplete Review!"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <p>Please Enter Your Review Title</p>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={titlePop} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+        </Dialog>
+
+        <Dialog open={missingReview} close={reviewPop}>
+        <DialogTitle>{"Incomplete Review!"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <p>Please Enter Your Review</p>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={reviewPop} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+        </Dialog>
+
+        <Dialog open={missingRating} close={ratingPop}>
+        <DialogTitle>{"Incomplete Review!"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <p>Please Select A Rating</p>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={ratingPop} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+        </Dialog>
+
+        <Dialog open={submitSucess} close={successPop}>
+        <DialogTitle>{"Sucesssfully Submitted"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Your Review Has Been Received
+            <p>Movie: {selectedMovie}</p>
+            <p>Title: {enteredTitle}</p>
+            <p>Review: {enteredReview}</p>
+            <p>Rating: {selectedRating}</p>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={successPop} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+        </Dialog>
+      </div>
+    )
+}
+
+const MovieSelection = (props) => {
+  const handleChange = (event) => {
+    props.onChange(event.target.value);
+  };
+
+  return (
+    <div>
+      <FormControl >
+        <InputLabel>Movie</InputLabel>
+        <Select
+          required //selection is required or it will throw error
+          onChange={handleChange}
+        >
+          {props.movieList.map((movies) => (
+          <MenuItem value = {movies.name}>{movies.name}</MenuItem>
+          ))}
+
+        </Select>
+      </FormControl>
+    </div>
+  );
 };
+
+const ReviewTitle = (props) => {
+   const handleChange = (event) => {
+     props.onChange(event.target.value);
+   };
+
+  return (
+    <div>
+      <form>
+          <TextField
+            label="Enter Review Title"
+            maxLength={200}
+            required
+            onChange = {handleChange}
+          />
+      </form>
+    </div>
+  );
+};
+
+const ReviewBody = (props) => {
+  const handleChange = (event) => {
+    props.onChange(event.target.value);
+  };
+
+ return (
+   <div>
+     <form>
+         <TextField
+           label="Enter Review Body"
+           multiline
+           maxLength={200}
+           required
+          onChange = {handleChange}
+         />
+     </form>
+   </div>
+ );
+};
+
+const ReviewRating = (props) => {
+  const handleChange = (event) => {
+    props.onChange(event.target.value);
+  };
+
+  return (
+      <div>
+        <FormLabel component="legend">Select a Rating</FormLabel>
+        <RadioGroup
+         row
+         onChange={handleChange}
+         >
+          <FormControlLabel
+            value="1"
+            control={<Radio color="primary" />}
+            label="1"
+            labelPlacement="bottom"
+          />
+          <FormControlLabel
+            value="2"
+            control={<Radio color="primary" />}
+            label="2"
+            labelPlacement="bottom"
+          />
+          <FormControlLabel
+            value="3"
+            control={<Radio color="primary" />}
+            label="3"
+            labelPlacement="bottom"
+          />
+          <FormControlLabel
+            value="4"
+            control={<Radio color="primary" />}
+            label="4"
+            labelPlacement="bottom"
+          />
+          <FormControlLabel
+            value="5"
+            control={<Radio color="primary" />}
+            label="5"
+            labelPlacement="bottom"
+          />
+        </RadioGroup>
+      </div>
+    );
+};
+
+Home.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
 
 export default withStyles(styles)(Home);
