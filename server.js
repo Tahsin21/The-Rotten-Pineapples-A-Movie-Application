@@ -45,7 +45,6 @@ app.post('/api/addReview', (req, res) => {
 		if (error) {
 			return console.error(error.message);
 		}
-
 		res.send({ express: results });
 	});
 	connection.end();

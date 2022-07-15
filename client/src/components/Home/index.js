@@ -30,7 +30,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 
 //Dev mode
-const serverURL = ""; //enable for dev mode
+const serverURL = "http://ec2-18-216-101-119.us-east-2.compute.amazonaws.com:3068"; //enable for dev mode
 
 //Deployment mode instructions
 //const serverURL = "http://ov-research-4.uwaterloo.ca:PORT"; //enable for deployed mode; Change PORT to the port number given to you;
@@ -127,6 +127,7 @@ class Home extends Component {
         userID: this.state.userID
       })
     });
+
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
     console.log("User settings: ", body);
@@ -135,8 +136,6 @@ class Home extends Component {
 
   render() {
     const { classes } = this.props;
-
-
 
     const mainMessage = (
       <Grid
@@ -178,7 +177,7 @@ class Home extends Component {
 }
 
 const Review = () => {
-  const [movieList, setMovieList] = React.useState([]);
+  const [movieList, setMovieList] = React.useState([]); //import imbd movies
 
   const [selectedMovie, setSelectedMovie] = React.useState("");
   const [missingMovie, setMissingMovie] = React.useState(false);
@@ -198,24 +197,25 @@ const Review = () => {
     callApiGetMovies()
     .then(res => {
     var parsed = JSON.parse(res.express);
-    setMovieList(parsed);
+      setMovieList(parsed);
     })
-    }
+  }
 
-    const callApiGetMovies = async () => {
+  const callApiGetMovies = async () => {
     const url = serverURL + "/api/getMovies";
-    console.log(url);
+      console.log(url);
     const response = await fetch(url, {
-    method: "POST",
-    headers: {
-    "Content-Type": "application/json",
-    }
-    });
-    const body = await response.json();
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      }
+  });
+
+  const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
-    console.log("User settings: ", body);
+      console.log("User settings: ", body);
     return body;
-    }
+  }
     
     React.useEffect(() => {
       getMovies();
@@ -229,11 +229,11 @@ const Review = () => {
 
   const callApiAddReview = async (SQLReview) => {
     const url = serverURL + "/api/addReview";
-    console.log(url);
+      console.log(url);
     const response = await fetch(url, {
       method: "POST",
       headers: {
-    "Content-Type": "application/json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         data: SQLReview
@@ -251,7 +251,7 @@ const Review = () => {
     if (selectedMovie && enteredTitle && enteredReview && selectedRating) {
       var newReview = {
         "userID": 1,
-        "movieID": 2136,
+        "movieID": selectedMovie.substring(0, selectedMovie.indexOf(": ")),
         "reviewTitle": enteredTitle,
         "reviewContent": enteredReview,
         "reviewScore": parseInt(selectedRating)
@@ -310,14 +310,14 @@ const Review = () => {
           <Grid item xs={6} style={{
             textAlign: 'right',
             marginTop: "20px",
-            marginLeft: "50px",
+            marginLeft: "30px",
           }}>
             <MovieSelection onChange={setSelectedMovie} movieList = {movieList} />
           </Grid>
 
           <Grid container spacing={3} style= {{
               marginTop: "20px",
-              marginLeft: "470px",
+              marginLeft: "630px",
           }}>
           <Grid item xs={4}>
             <ReviewTitle onChange={setEnteredTitle} />
@@ -330,15 +330,15 @@ const Review = () => {
 
         <Grid item xs={4} style = {{
             marginTop: "50px",
-            marginLeft: "530px",
+            marginLeft: "745px",
         }}>
             <ReviewRating onChange={setSelectedRating} />
           </Grid>
         
         <Grid item xs={12} style={{
             textAlign: 'center',
-            marginLeft: "35px",
-            marginTop: "20px",
+            marginLeft: "4px",
+            marginTop: "35px",
           }}>
   
             <Button variant="outlined" color="primary" onClick = {submitReview}>
@@ -435,11 +435,11 @@ const MovieSelection = (props) => {
       <FormControl >
         <InputLabel>Movie</InputLabel>
         <Select
-          required //selection is required or it will throw error
+          required
           onChange={handleChange}
         >
           {props.movieList.map((movies) => (
-          <MenuItem value = {movies.name}>{movies.name}</MenuItem>
+          <MenuItem value = {movies.id + ": " + movies.name}>{movies.name}</MenuItem>
           ))}
 
         </Select>
