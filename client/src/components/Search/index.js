@@ -16,7 +16,7 @@ import CardContent from '@mui/material/CardContent';
 import Paper from '@mui/material/Paper';
 import { createTheme, ThemeProvider, styled } from '@material-ui/core/styles';
 
-const serverURL = "";
+const serverURL = "http://ec2-18-216-101-119.us-east-2.compute.amazonaws.com:3068";
 
 const SearchPage = () => {
   const [searchActor, setSearchedActor] = React.useState("");
